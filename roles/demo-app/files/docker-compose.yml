@@ -1,0 +1,31 @@
+version: '3'
+services:
+
+  app:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DEMO_APP_ADDR: "app"
+      DEMO_REDIS_ADDR: "redis:6379"
+    networks:
+      - zerodha
+    ports:
+      - "8000:8080"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:4.0.5-alpine
+    volumes:
+      - ./data:/data
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - zerodha
+
+networks:
+  zerodha:
+   driver: bridge

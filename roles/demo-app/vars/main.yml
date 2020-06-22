@@ -1,0 +1,34 @@
+---
+# vars file for demo-app
+deamon_path: /etc/docker/daemon.json
+sysctl_path: /etc/sysctl.conf
+dest_path: /etc/demo-ops
+packages: 
+   - apt-transport-https
+   - ca-certificates
+   - curl
+   - software-properties-common
+sysctl_config:
+   # Increase size of file handles and inode cache
+   fs.file-max: 2097152
+   # Do less swapping
+   vm.swappiness: 10
+   vm.dirty_ratio: 60
+   vm.dirty_background_ratio: 2
+   # Sets the time before the kernel considers migrating a proccess to another core
+   kernel.sched_migration_cost_ns: 5000000
+   # Protect Against TCP Time-Wait
+   net.ipv4.tcp_rfc1337: 1
+   # Control Syncookies
+   net.ipv4.tcp_syncookies: 1
+   # Decrease the time default value for connections to keep alive
+   net.ipv4.tcp_keepalive_time: 300
+   net.ipv4.tcp_keepalive_probes: 5
+   net.ipv4.tcp_keepalive_intvl: 15
+   # Increase the tcp-time-wait buckets pool size to prevent simple DOS attacks
+   net.ipv4.tcp_max_tw_buckets: 1440000
+   net.ipv4.tcp_tw_recycle: 1
+   net.ipv4.tcp_tw_reuse: 1
+
+
+

@@ -1,0 +1,94 @@
+---
+# tasks file for demo-app
+  - name: Change hostname to demo-ops
+    hostname:
+      name: "demo-ops"
+
+  - name: Add user "demo"
+    user:
+      name: demo
+      shell: /bin/bash
+      append: yes
+
+  - name: Set timezone to Asia/Kolkata
+    timezone:
+      name: Asia/Kolkata
+
+  - name: Install docker packages
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+
+  - name: Add Docker official GPG key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Verify that we have the key with the fingerprint
+    apt_key:
+      id: 0EBFCD88
+      state: present
+          
+  - name: Set up the stable repository
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+      state: present
+      update_cache: yes
+
+  - name: Update apt packages
+    apt:
+      update_cache: yes
+      
+  - name: Install docker
+    apt:
+      name: docker-ce
+      state: present
+      update_cache: yes
+ 
+  - name: Add user to group
+    user:
+      name: demo
+      group: docker
+      append: yes
+
+  - name: Setting Up Docker Deamon Config for Logs 
+    template:
+      src: DeamonConfig.j2
+      dest: "{{ deamon_path }}"
+
+  - name: Security Hardening with sysctl
+    sysctl:
+      name: '{{ item.key }}'
+      value: '{{ item.value }}'
+      sysctl_set: yes
+      state: present
+      reload: yes
+      ignoreerrors: yes
+    with_dict: '{{ sysctl_config }}'
+        
+  - name: Enable Docker CE service at startup
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: Download and Install docker-compose
+    get_url:
+      url: https://github.com/docker/compose/releases/download/1.25.5/docker-compose-{{ ansible_system  }}-{{ ansible_architecture }}
+      dest: /usr/local/bin/docker-compose
+      mode: u+x,g+x,o+x
+
+  - name: Create a symbolic link
+    file:
+      src: /usr/local/bin/docker-compose
+      dest: /usr/bin/docker-compose
+      state: link
+   
+  - name: copying Content files
+    copy: 
+      src: "{{ role_path }}/files/"
+      dest: "{{ dest_path }}"
+
+  - name: Start the Application service
+    shell: docker-compose -f "{{ dest_path }}/docker-compose.yml" up -d
