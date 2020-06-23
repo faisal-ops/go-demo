@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: demo-ops
   name: demo
 spec:
   selector:
